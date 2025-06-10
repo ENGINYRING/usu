@@ -4,13 +4,40 @@
 # @copyright (c) 2017 www.phpBB-SEO.ir
 # @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
 #
-# You must indent with 4 spaces instead of 1 tab
-#
 services:
+    phpbbseo.usu.config:
+        class: phpbbseo\usu\Config\SeoConfig
+        factory: ['phpbbseo\usu\Config\SeoConfig', 'fromPhpbbConfig']
+        arguments:
+            - '@config'
+
+    phpbbseo.usu.cache:
+        class: phpbbseo\usu\Service\SeoCache
+        arguments:
+            - '@cache.driver'
+
+    phpbbseo.usu.url_validator:
+        class: phpbbseo\usu\Service\UrlValidator
+
+    phpbbseo.usu.url_generator:
+        class: phpbbseo\usu\Service\UrlGenerator
+        arguments:
+            - '@phpbbseo.usu.config'
+            - '@phpbbseo.usu.cache'
+            - '@phpbbseo.usu.url_validator'
+            - '@request'
+
+    phpbbseo.usu.redirect_handler:
+        class: phpbbseo\usu\Service\RedirectHandler
+        arguments:
+            - '@phpbbseo.usu.config'
+
     phpbbseo.usu.core:
         class: phpbbseo\usu\core\core
         arguments:
-            - '@config'
+            - '@phpbbseo.usu.config'
+            - '@phpbbseo.usu.url_generator'
+            - '@phpbbseo.usu.redirect_handler'
             - '@request'
             - '@user'
             - '@auth'
@@ -21,6 +48,8 @@ services:
         class: phpbbseo\usu\event\listener
         arguments:
             - '@phpbbseo.usu.core'
+            - '@phpbbseo.usu.url_generator'
+            - '@phpbbseo.usu.config'
             - '@config'
             - '@auth'
             - '@template'
